@@ -1,6 +1,6 @@
 import { useLogin, useSignup } from '@/queries/auth';
 import { useState } from 'react';
-import { z } from 'zod';
+
 type Form = {
   email: string;
   password: string;
@@ -13,11 +13,6 @@ const INIT_FORM: Form = {
   password: '',
   passwordConfirm: '',
 };
-
-const schema = z.object({
-  email: z.string().email('이메일이 유효하지 않습니다.'),
-  password: z.string().min(8, '비밀번호가 8자리 미만입니다.'),
-});
 
 export default function useLoginForm(currentPage: 'login' | 'signup') {
   const [form, setForm] = useState<Form>(INIT_FORM);
@@ -46,7 +41,6 @@ export default function useLoginForm(currentPage: 'login' | 'signup') {
       if (password.length < 8) return false;
       return EMAIL_REGEX.test(email);
     } else {
-      console.log(form);
       if (!email.length || !password.length || !passwordConfirm.length)
         return false;
       if (password.length < 8) return false;
