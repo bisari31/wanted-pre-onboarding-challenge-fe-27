@@ -1,6 +1,7 @@
 import Auth from '@/routes/Auth';
+import AuthGuard from '@/routes/AuthGuard';
 import Layout from '@/routes/Layout';
-import Main from '@/routes/Main';
+import Home from '@/routes/Home';
 import {
   Route,
   createBrowserRouter,
@@ -9,8 +10,10 @@ import {
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route element={<Layout />}>
-      <Route index element={<Main />} />
+    <Route element={<Layout />} errorElement={<div>에러 페이지</div>}>
+      <Route element={<AuthGuard />}>
+        <Route index element={<Home />} />
+      </Route>
       <Route path="auth" element={<Auth />} />
     </Route>,
   ),

@@ -5,15 +5,8 @@ import { Link } from 'react-router-dom';
 export default function Header() {
   const { logout, token } = useAuthStore();
   return (
-    <header>
-      <nav className="flex items-center">
-        <ul className="flex flex-1">
-          <li className="">
-            <Link className="flex py-4" to={'/'}>
-              홈
-            </Link>
-          </li>
-        </ul>
+    <header className="h-14">
+      <nav className="flex h-full items-center justify-end">
         <ul className="flex">
           {token ? (
             <li>
@@ -23,9 +16,11 @@ export default function Header() {
             </li>
           ) : (
             <li>
-              <Link className="flex py-4" to="auth">
-                로그인
-              </Link>
+              <Button asChild variant={'ghost'}>
+                <Link className="flex py-4" to="auth">
+                  로그인
+                </Link>
+              </Button>
             </li>
           )}
         </ul>

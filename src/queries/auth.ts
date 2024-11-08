@@ -21,7 +21,6 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-      console.log('sdf');
       login(data.token);
       naviagte('/');
     },

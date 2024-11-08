@@ -1,12 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import useLoginForm from '@/hooks/useLogin';
+import useAuthStore from '@/stores/useAuthStore';
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 export default function Auth() {
   const [currentPage, setCurrentPage] = useState<'login' | 'signup'>('login');
   const { handleChange, handleSubmit, form, resetForm, isValid } =
     useLoginForm(currentPage);
+  const token = useAuthStore((state) => state.token);
+
+  if (token) return <Navigate to={'/'} />;
 
   return (
     <div className="flex w-full items-center justify-center">
