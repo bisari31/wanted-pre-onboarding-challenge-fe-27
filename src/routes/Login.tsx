@@ -7,6 +7,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLogin } from '@/queries/auth';
 import auth from '@/lib/auth';
+import { isAxiosError } from 'axios';
 
 const schema = z.object({
   email: z.string().email('이메일 형식이 올바르지 않습니다'),
@@ -24,15 +25,31 @@ export default function Login() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<Inputs>({
     resolver: zodResolver(schema),
   });
   const { mutate } = useLogin();
-  const handleSubmitForm: SubmitHandler<Inputs> = (data) => {
-    mutate({ email: data.email, password: data.password });
+  const handleSubmitForm: SubmitHandler<Inputs> = ({ email, password }) => {
+    mutate(
+      { email, password },
+      {
+        onError: (err) => {
+          if (isAxiosError(err)) {
+            if (err.status === 400) {
+              return setError('root', {
+                message: '아이디 또는 비밀번호가 일치하지 않습니다',
+              });
+            }
+            return setError('root', {
+              message: '서버 오류 발생',
+            });
+          }
+        },
+      },
+    );
   };
-
   return (
     <div className="flex w-full items-center justify-center">
       <form
@@ -60,6 +77,9 @@ export default function Login() {
             <Link to={'/signup'}>아이디가 없습니다</Link>
           </Button>
         </div>
+        <p className="text-center text-sm">
+          {errors.root && errors.root.message}
+        </p>
         <Button
           disabled={!!errors.email || !!errors.password}
           className="mt-5"

@@ -6,12 +6,13 @@ import { z } from 'zod';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignup } from '@/queries/auth';
+import { isAxiosError } from 'axios';
 
 const schema = z
   .object({
     email: z.string().email('이메일 형식이 올바르지 않습니다'),
     password: z.string().min(8, '비밀번호가 8자리 미만입니다'),
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(8, '비밀번호가 8자리 미만입니다'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ['confirmPassword'],
@@ -25,13 +26,28 @@ export default function Signup() {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<Inputs>({
     resolver: zodResolver(schema),
   });
   const { mutate } = useSignup();
 
   const handleSubmitForm: SubmitHandler<Inputs> = (data) => {
-    mutate({ email: data.email, password: data.password });
+    mutate(
+      { email: data.email, password: data.password },
+      {
+        onError: (error) => {
+          if (isAxiosError(error)) {
+            if (error.status === 409) {
+              return setError('root', { message: '이메일이 존재합니다' });
+            }
+            return setError('root', {
+              message: '서버 오류 발생',
+            });
+          }
+        },
+      },
+    );
   };
 
   return (
@@ -73,6 +89,9 @@ export default function Signup() {
             <Link to={'/login'}>이미 아이디가 있습니다</Link>
           </Button>
         </div>
+        <p className="text-center text-sm">
+          {errors.root && errors.root.message}
+        </p>
         <Button
           disabled={
             !!errors.email || !!errors.password || !!errors.confirmPassword

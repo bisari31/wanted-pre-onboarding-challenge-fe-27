@@ -20,11 +20,7 @@ export const useLogin = () => {
   const login = useAuthStore((state) => state.login);
   return useMutation({
     mutationFn: authService.login,
-    onError: (error) => {
-      console.log(error);
-    },
     onSuccess: (data) => {
-      console.log(data);
       login(data.token);
       naviagte('/');
     },
