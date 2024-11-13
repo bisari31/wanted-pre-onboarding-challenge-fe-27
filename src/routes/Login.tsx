@@ -1,20 +1,13 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 import { Link, redirect } from 'react-router-dom';
-import { z } from 'zod';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLogin } from '@/queries/auth';
 import auth from '@/lib/auth';
 import { isAxiosError } from 'axios';
-
-const schema = z.object({
-  email: z.string().email('이메일 형식이 올바르지 않습니다'),
-  password: z.string().min(8, '비밀번호가 8자리 미만입니다'),
-});
-
-type Inputs = z.infer<typeof schema>;
+import AuthInput from '@/components/auth/Input';
+import { LoginSchemaType, loginSchema } from '@/lib/schemas';
 
 export const loader = () => {
   if (auth.get()) return redirect('/');
@@ -23,15 +16,15 @@ export const loader = () => {
 
 export default function Login() {
   const {
-    register,
     handleSubmit,
     setError,
+    register,
     formState: { errors },
-  } = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  } = useForm<LoginSchemaType>({
+    resolver: zodResolver(loginSchema),
   });
   const { mutate } = useLogin();
-  const handleSubmitForm: SubmitHandler<Inputs> = ({ email, password }) => {
+  const handleSubmitForm = ({ email, password }: LoginSchemaType) => {
     mutate(
       { email, password },
       {
@@ -56,22 +49,18 @@ export default function Login() {
         onSubmit={handleSubmit(handleSubmitForm)}
         className="flex w-full max-w-80 flex-col gap-2"
       >
-        <div className="flex flex-col gap-1">
-          <Input {...register('email')} placeholder="이메일" type="email" />
-          {errors.email && (
-            <p className="text-sm text-red-500"> {errors.email.message}</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <Input
-            {...register('password')}
-            placeholder="비밀번호"
-            type="password"
-          />
-          {errors.password && (
-            <p className="text-sm text-red-500"> {errors.password.message}</p>
-          )}
-        </div>
+        <AuthInput
+          {...register('email')}
+          type="email"
+          placeholder="이메일"
+          message={errors.email?.message}
+        />
+        <AuthInput
+          {...register('password')}
+          type="password"
+          placeholder="비밀번호"
+          message={errors.password?.message}
+        />
         <div className="flex justify-end">
           <Button asChild variant={'ghost'}>
             <Link to={'/signup'}>아이디가 없습니다</Link>

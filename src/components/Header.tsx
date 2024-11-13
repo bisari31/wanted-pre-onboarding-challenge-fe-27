@@ -1,16 +1,23 @@
 import { Button } from '@/components/ui/button';
 import useAuthStore from '@/stores/useAuthStore';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Header() {
   const { logout, credentials } = useAuthStore();
+  const navigate = useNavigate();
   return (
     <header className="h-14">
       <nav className="flex h-full items-center justify-end">
         <ul className="flex items-center gap-2">
           {credentials ? (
             <li>
-              <Button type="button" onClick={logout}>
+              <Button
+                type="button"
+                onClick={() => {
+                  logout();
+                  navigate('/login');
+                }}
+              >
                 로그아웃
               </Button>
             </li>

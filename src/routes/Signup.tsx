@@ -1,25 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 import { Link } from 'react-router-dom';
-import { z } from 'zod';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignup } from '@/queries/auth';
 import { isAxiosError } from 'axios';
-
-const schema = z
-  .object({
-    email: z.string().email('이메일 형식이 올바르지 않습니다'),
-    password: z.string().min(8, '비밀번호가 8자리 미만입니다'),
-    confirmPassword: z.string().min(8, '비밀번호가 8자리 미만입니다'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ['confirmPassword'],
-    message: '비밀번호가 일치하지 않습니다.',
-  });
-
-type Inputs = z.infer<typeof schema>;
+import { signupSchema, SignupSchemaType } from '@/lib/schemas';
+import AuthInput from '@/components/auth/Input';
 
 export default function Signup() {
   const {
@@ -27,12 +14,12 @@ export default function Signup() {
     handleSubmit,
     formState: { errors },
     setError,
-  } = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  } = useForm<SignupSchemaType>({
+    resolver: zodResolver(signupSchema),
   });
   const { mutate } = useSignup();
 
-  const handleSubmitForm: SubmitHandler<Inputs> = (data) => {
+  const handleSubmitForm = (data: SignupSchemaType) => {
     mutate(
       { email: data.email, password: data.password },
       {
@@ -56,34 +43,24 @@ export default function Signup() {
         onSubmit={handleSubmit(handleSubmitForm)}
         className="flex w-full max-w-80 flex-col gap-2"
       >
-        <div className="flex flex-col gap-1">
-          <Input {...register('email')} placeholder="이메일" type="email" />
-          {errors.email && (
-            <p className="text-sm text-red-500"> {errors.email.message}</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <Input
-            {...register('password')}
-            placeholder="비밀번호"
-            type="password"
-          />
-          {errors.password && (
-            <p className="text-sm text-red-500"> {errors.password.message}</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <Input
-            {...register('confirmPassword')}
-            placeholder="비밀번호 확인"
-            type="password"
-          />
-          {errors.confirmPassword && (
-            <p className="text-sm text-red-500">
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
+        <AuthInput
+          {...register('email')}
+          type="email"
+          placeholder="이메일"
+          message={errors.email?.message}
+        />
+        <AuthInput
+          {...register('password')}
+          type="password"
+          placeholder="비밀번호"
+          message={errors.password?.message}
+        />
+        <AuthInput
+          {...register('confirmPassword')}
+          type="password"
+          placeholder="비밀번호 확인"
+          message={errors.confirmPassword?.message}
+        />
         <div className="flex justify-end">
           <Button asChild variant={'ghost'}>
             <Link to={'/login'}>이미 아이디가 있습니다</Link>
