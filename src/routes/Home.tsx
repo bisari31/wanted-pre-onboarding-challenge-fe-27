@@ -1,7 +1,13 @@
 import CreateForm from '@/components/todos/CreateForm';
 import DetailForm from '@/components/todos/DetailForm';
 import TodoList from '@/components/todos/TodoList';
-import { useSearchParams } from 'react-router-dom';
+import auth from '@/lib/auth';
+import { redirect, useSearchParams } from 'react-router-dom';
+
+export const loader = () => {
+  if (!auth.get()) return redirect('/login');
+  return null;
+};
 
 export default function Home() {
   const [searchParams] = useSearchParams();

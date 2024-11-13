@@ -1,8 +1,5 @@
-import axios, { CreateAxiosDefaults, isAxiosError } from 'axios';
-
-const auth = {
-  get: (name: string) => localStorage.getItem(name),
-};
+import auth from '@/lib/auth';
+import axios, { CreateAxiosDefaults } from 'axios';
 
 const defaultConfig: CreateAxiosDefaults = {
   baseURL: 'http://localhost:8080',
@@ -18,12 +15,12 @@ export const apiRequesterWithToken = axios.create({
 });
 
 apiRequesterWithToken.interceptors.request.use((config) => {
-  const token = auth.get('token');
-  if (!token) {
-    window.location.href = '/auth';
+  const credentials = auth.get();
+  if (!credentials) {
+    window.location.href = '/login';
     return config;
   }
-  config.headers.Authorization = token;
+  config.headers.Authorization = credentials;
   return config;
 });
 

@@ -1,25 +1,26 @@
+import { AUTH_KEY_NAME } from '@/lib/auth';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface AuthStore {
-  token: string;
+  credentials: string;
   logout: () => void;
-  login: (token: string) => void;
+  login: (value: string) => void;
 }
 
 const useAuthStore = create(
   persist<AuthStore>(
     (set, get) => ({
-      token: '',
-      login: (token: string) => {
-        set({ token });
+      credentials: '',
+      login: (value: string) => {
+        set({ credentials: value });
       },
       logout: () => {
-        set({ token: '' });
+        set({ credentials: '' });
       },
     }),
     {
-      name: 'token',
+      name: AUTH_KEY_NAME,
     },
   ),
 );
