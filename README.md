@@ -5,10 +5,11 @@ $ npm install
 $ npm start
 ```
 
-### 기술 스택
+### 사용 스택
 
 - React
 - Typescript
 - Zustand
 - React-query
 - Tailwind css
+- react-hook-form
