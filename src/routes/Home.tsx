@@ -2,11 +2,13 @@ import CreateForm from '@/components/todos/CreateForm';
 import DetailForm from '@/components/todos/DetailForm';
 import TodoList from '@/components/todos/TodoList';
 import auth from '@/lib/auth';
+import { queryClient } from '@/main';
+import { todoKeys } from '@/queries/keys';
 import { redirect, useSearchParams } from 'react-router-dom';
 
-export const loader = () => {
+export const loader = () => () => {
   if (!auth.get()) return redirect('/login');
-  return null;
+  return queryClient.ensureQueryData(todoKeys.todos);
 };
 
 export default function Home() {

@@ -7,7 +7,12 @@ export default function Header() {
   const navigate = useNavigate();
   return (
     <header className="h-14">
-      <nav className="flex h-full items-center justify-end">
+      <nav className="flex h-full items-center justify-between">
+        <ul className="flex items-center gap-2">
+          <li>
+            <Link to={'/'}>home</Link>
+          </li>
+        </ul>
         <ul className="flex items-center gap-2">
           {credentials ? (
             <li>

@@ -1,3 +1,4 @@
+import { todoKeys } from '@/queries/keys';
 import todoService from '@/services/todoService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -19,8 +20,7 @@ export const useCreateTodo = () => {
 
 export const useTodos = () => {
   return useQuery({
-    queryKey: ['todos'],
-    queryFn: () => todoService.getTodos(),
+    ...todoKeys.todos,
     staleTime: 1000 * 60 * 30,
     select: (data) => {
       const list = [...data.data];
