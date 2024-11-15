@@ -8,9 +8,10 @@ import auth from '@/lib/auth';
 import { isAxiosError } from 'axios';
 import AuthInput from '@/components/auth/Input';
 import { LoginSchemaType, loginSchema } from '@/lib/schemas';
+import routes from '@/lib/routes';
 
 export const loader = () => {
-  if (auth.get()) return redirect('/');
+  if (auth.get()) return redirect(routes.home);
   return null;
 };
 
@@ -19,9 +20,10 @@ export default function Login() {
     handleSubmit,
     setError,
     register,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
+    mode: 'onChange',
   });
   const { mutate } = useLogin();
   const handleSubmitForm = ({ email, password }: LoginSchemaType) => {
@@ -63,17 +65,13 @@ export default function Login() {
         />
         <div className="flex justify-end">
           <Button asChild variant={'ghost'}>
-            <Link to={'/signup'}>아이디가 없습니다</Link>
+            <Link to={routes.signup}>아이디가 없습니다</Link>
           </Button>
         </div>
         <p className="text-center text-sm">
           {errors.root && errors.root.message}
         </p>
-        <Button
-          disabled={!!errors.email || !!errors.password}
-          className="mt-5"
-          type="submit"
-        >
+        <Button disabled={!isValid} className="mt-5" type="submit">
           로그인
         </Button>
       </form>

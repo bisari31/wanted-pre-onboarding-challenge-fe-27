@@ -1,3 +1,4 @@
+import routes from '@/lib/routes';
 import authService from '@/services/authService';
 import useAuthStore from '@/stores/useAuthStore';
 import { useMutation } from '@tanstack/react-query';
@@ -10,7 +11,7 @@ export const useSignup = () => {
     mutationFn: authService.signup,
     onSuccess: (data) => {
       login(data.token);
-      naviagte('/');
+      naviagte(routes.home);
     },
   });
 };
@@ -22,7 +23,7 @@ export const useLogin = () => {
     mutationFn: authService.login,
     onSuccess: (data) => {
       login(data.token);
-      naviagte('/');
+      naviagte(routes.home);
     },
   });
 };

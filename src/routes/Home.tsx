@@ -1,25 +1,23 @@
 import CreateForm from '@/components/todos/CreateForm';
-import DetailForm from '@/components/todos/DetailForm';
 import TodoList from '@/components/todos/TodoList';
 import auth from '@/lib/auth';
-import { queryClient } from '@/main';
+import routes from '@/lib/routes';
 import { todoKeys } from '@/queries/keys';
-import { redirect, useSearchParams } from 'react-router-dom';
+import { QueryClient } from '@tanstack/react-query';
+import { Outlet, redirect } from 'react-router-dom';
 
-export const loader = () => () => {
-  if (!auth.get()) return redirect('/login');
-  return queryClient.ensureQueryData(todoKeys.todos);
+export const loader = (queryClient: QueryClient) => () => {
+  if (!auth.get()) return redirect(routes.login);
+  return queryClient.ensureQueryData(todoKeys.todos());
 };
 
 export default function Home() {
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get('id');
   return (
     <div className="w-full">
       <CreateForm />
       <div className="flex gap-5">
         <TodoList />
-        <DetailForm key={id} />
+        <Outlet />
       </div>
     </div>
   );

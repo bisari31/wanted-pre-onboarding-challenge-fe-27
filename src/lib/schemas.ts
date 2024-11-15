@@ -16,5 +16,14 @@ export const signupSchema = z
     message: '비밀번호가 일치하지 않습니다.',
   });
 
+export const todoFormSchema = z.object({
+  title: z.string().min(1),
+  content: z.string().min(1),
+  priority: z.enum(['urgent', 'normal', 'low']).refine((val) => !!val),
+});
+
+export type TodoFormType = z.infer<typeof todoFormSchema>;
+export type Priority = z.infer<typeof todoFormSchema>['priority'];
+
 export type LoginSchemaType = z.infer<typeof loginSchema>;
 export type SignupSchemaType = z.infer<typeof signupSchema>;

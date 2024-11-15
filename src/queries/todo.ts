@@ -1,3 +1,5 @@
+import useQueryString from '@/hooks/useQueryString';
+import routes from '@/lib/routes';
 import { todoKeys } from '@/queries/keys';
 import todoService from '@/services/todoService';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -9,8 +11,8 @@ export const useCreateTodo = () => {
   return useMutation({
     mutationFn: todoService.create,
     onSuccess: ({ data }) => {
-      navigate(`/?id=${data.id}`);
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      navigate(data.id);
+      queryClient.invalidateQueries({ queryKey: todoKeys.defaultKey });
     },
     onError: (err) => {
       console.log(err);
@@ -19,20 +21,19 @@ export const useCreateTodo = () => {
 };
 
 export const useTodos = () => {
+  const { query } = useQueryString();
   return useQuery({
-    ...todoKeys.todos,
+    ...todoKeys.todos(query),
     staleTime: 1000 * 60 * 30,
     select: (data) => {
-      const list = [...data.data];
-      return list.reverse();
+      return data.data;
     },
   });
 };
 
-export const useTodoById = (id: string | null) => {
+export const useTodoById = (id?: string) => {
   return useQuery({
-    queryKey: ['todos', id],
-    queryFn: () => todoService.getTodoById(id),
+    ...todoKeys.todoById(id),
     staleTime: 1000 * 60 * 30,
     enabled: !!id,
     select: (data) => {
@@ -41,13 +42,14 @@ export const useTodoById = (id: string | null) => {
   });
 };
 
-export const useUpdateTodo = (toggleMode: () => void) => {
+export const useUpdateTodo = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: todoService.updateTodoById,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
-      toggleMode();
+      queryClient.invalidateQueries({
+        queryKey: todoKeys.defaultKey,
+      });
     },
     onError: (err) => {
       console.log(err);
@@ -61,8 +63,10 @@ export const useDeleteTodo = () => {
   return useMutation({
     mutationFn: todoService.deleteTodoById,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
-      navigate('/');
+      navigate(routes.home);
+      queryClient.invalidateQueries({
+        queryKey: todoKeys.defaultKey,
+      });
     },
     onError: (err) => {
       console.log(err);
