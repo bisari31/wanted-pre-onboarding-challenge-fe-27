@@ -7,12 +7,10 @@ $ npm start
 
 ### 사용 스택
 
-- React
-- Typescript
-- Zustand
-- React-query
-- Tailwind css
-- react-hook-form
+- react, typescript
+- 상태 관리: zustand, react-query
+- UI: tailwindcss, shadcn
+- 폼 관리: react-hook-form, zod
 
 ### 설명
 
