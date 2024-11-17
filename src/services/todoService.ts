@@ -9,7 +9,7 @@ const todoService = {
     );
     return data;
   },
-  getTodos: async (query: any) => {
+  getTodos: async (query: unknown) => {
     const { data } = await apiRequesterWithToken<{ data: Todo[] | number }>(
       '/todos',
       {

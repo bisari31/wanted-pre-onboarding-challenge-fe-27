@@ -1,13 +1,15 @@
 import { Button } from '@/components/ui/button';
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSignup } from '@/queries/auth';
 import { isAxiosError } from 'axios';
 import { signupSchema, SignupSchemaType } from '@/lib/schemas';
 import AuthInput from '@/components/auth/Input';
 import routes from '@/lib/routes';
+import { useMutation } from '@tanstack/react-query';
+import authService from '@/services/authService';
+import useAuthStore from '@/stores/useAuthStore';
 
 export default function Signup() {
   const {
@@ -19,24 +21,30 @@ export default function Signup() {
     resolver: zodResolver(signupSchema),
     mode: 'onChange',
   });
-  const { mutate } = useSignup();
+  const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
+
+  const { mutate } = useMutation({
+    mutationFn: authService.signup,
+    onSuccess: (data) => {
+      login(data.token);
+      navigate(routes.home);
+    },
+    onError: (error) => {
+      if (isAxiosError(error)) {
+        if (error.status === 409) {
+          setError('root', { message: '이메일이 존재합니다' });
+        } else {
+          setError('root', {
+            message: '서버 오류 발생',
+          });
+        }
+      }
+    },
+  });
 
   const handleSubmitForm = (data: SignupSchemaType) => {
-    mutate(
-      { email: data.email, password: data.password },
-      {
-        onError: (error) => {
-          if (isAxiosError(error)) {
-            if (error.status === 409) {
-              return setError('root', { message: '이메일이 존재합니다' });
-            }
-            return setError('root', {
-              message: '서버 오류 발생',
-            });
-          }
-        },
-      },
-    );
+    mutate({ email: data.email, password: data.password });
   };
 
   return (

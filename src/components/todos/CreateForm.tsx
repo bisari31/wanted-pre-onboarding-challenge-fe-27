@@ -9,10 +9,13 @@ import {
 } from '@/components/ui/select';
 import { priorityMap } from '@/lib/constants';
 import { Priority, TodoFormType, todoFormSchema } from '@/lib/schemas';
-import { useCreateTodo } from '@/queries/todo';
+import { todoQueries } from '@/queries/query-factory';
+import todoService from '@/services/todoService';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SelectGroup, SelectLabel } from '@radix-ui/react-select';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 export default function CreateForm() {
   const {
@@ -24,19 +27,21 @@ export default function CreateForm() {
   } = useForm<TodoFormType>({
     resolver: zodResolver(todoFormSchema),
   });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const { mutate } = useCreateTodo();
+  const { mutate: createTodoMutate } = useMutation({
+    mutationFn: todoService.create,
+    onSuccess: ({ data }) => {
+      navigate(data.id);
+      queryClient.invalidateQueries({ queryKey: todoQueries.lists() });
+      reset({ priority: data.priority, content: '', title: '' });
+    },
+  });
 
   const handleSubmitForm = (data: TodoFormType) => {
     const { content, priority, title } = data;
-    mutate(
-      { title, content, priority },
-      {
-        onSuccess: (data) => {
-          reset({ priority: data.data.priority, content: '', title: '' });
-        },
-      },
-    );
+    createTodoMutate({ title, content, priority });
   };
 
   return (

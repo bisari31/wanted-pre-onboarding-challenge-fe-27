@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useTodos } from '@/queries/todo';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { Sort, priorityMap, sortMap } from '@/lib/constants';
@@ -14,11 +13,16 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Priority } from '@/lib/schemas';
 import useTodoFilterSearchParams from '@/hooks/useTodoFilterSearchParams';
+import { useQuery } from '@tanstack/react-query';
+import { todoQueries } from '@/queries/query-factory';
 
 export default function TodoList() {
-  const { data } = useTodos();
   const { todoFilterSearchParams, setTodoFilterSearchParams } =
     useTodoFilterSearchParams();
+  const { data } = useQuery({
+    ...todoQueries.todos(todoFilterSearchParams),
+    select: (data) => data.data,
+  });
 
   return (
     <div className="w-3/5">

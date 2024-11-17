@@ -4,39 +4,39 @@ import { Textarea } from '@/components/ui/textarea';
 import { priorityMap } from '@/lib/constants';
 import { Priority, TodoFormType, todoFormSchema } from '@/lib/schemas';
 import { cn } from '@/lib/utils';
-import { todoKeys } from '@/queries/keys';
-import { useTodoById, useDeleteTodo, useUpdateTodo } from '@/queries/todo';
 import { zodResolver } from '@hookform/resolvers/zod';
+
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@radix-ui/react-select';
-import { QueryClient } from '@tanstack/react-query';
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Params, useParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { Params, useNavigate, useParams } from 'react-router-dom';
+import { todoQueries } from '@/queries/query-factory';
+import todoService from '@/services/todoService';
+import routes from '@/lib/routes';
 
 export const loader =
   (queryClient: QueryClient) =>
   ({ params }: { params: Params<'id'> }) => {
-    return queryClient.ensureQueryData(todoKeys.todoById(params.id));
+    return queryClient.ensureQueryData(todoQueries.todoById(params.id));
   };
 
 export default function Detail() {
+  const [isEditing, setIsEditing] = useState(false);
   const { id } = useParams();
-  const { data } = useTodoById(id);
-  const {
-    register,
-    reset,
-    control,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<TodoFormType>({
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { data } = useQuery({
+    enabled: !!id,
+    ...todoQueries.todoById(id),
+    select: (data) => data.data,
+  });
+
+  const { register, reset, handleSubmit } = useForm<TodoFormType>({
     resolver: zodResolver(todoFormSchema),
     values: {
       content: data?.content ?? '',
@@ -44,25 +44,40 @@ export default function Detail() {
       priority: data?.priority ?? 'low',
     },
   });
-  const [isEditing, setIsEditing] = useState(false);
-  const { mutate: deleteMutate } = useDeleteTodo();
-  const { mutate: updateMutate } = useUpdateTodo();
+  const { mutate: deleteTodoMutate } = useMutation({
+    mutationFn: todoService.deleteTodoById,
+    onSuccess: () => {
+      navigate(routes.home);
+      queryClient.invalidateQueries({
+        queryKey: todoQueries.lists(),
+      });
+    },
+  });
+  const { mutate: updateTodoMutate } = useMutation({
+    mutationFn: todoService.updateTodoById,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: todoQueries.lists(),
+      });
+      toggleEditMode();
+    },
+  });
+
   const toggleEditMode = () => setIsEditing((prev) => !prev);
+
   const handleCancel = () => {
     reset();
     toggleEditMode();
   };
+
   const handleUpdateTodo = (formData: TodoFormType) => {
     if (!id) return;
-    updateMutate(
-      {
-        content: formData.content,
-        id,
-        title: formData.title,
-        priority: formData.priority,
-      },
-      { onSuccess: () => toggleEditMode() },
-    );
+    updateTodoMutate({
+      content: formData.content,
+      id,
+      title: formData.title,
+      priority: formData.priority,
+    });
   };
 
   return (
@@ -111,7 +126,7 @@ export default function Detail() {
             <>
               <Button
                 type="button"
-                onClick={() => deleteMutate(id)}
+                onClick={() => deleteTodoMutate(id)}
                 variant={'destructive'}
                 className="w-full"
               >
