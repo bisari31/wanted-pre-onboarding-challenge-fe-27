@@ -7,61 +7,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useTodos } from '@/queries/todo';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { Sort, priorityMap, sortMap } from '@/lib/constants';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Priority } from '@/lib/schemas';
-import useQueryString from '@/hooks/useQueryString';
+import useTodoFilterSearchParams from '@/hooks/useTodoFilterSearchParams';
 
 export default function TodoList() {
   const { data } = useTodos();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { query } = useQueryString();
-  const handleChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    if (!value) {
-      searchParams.delete('keyword');
-    } else {
-      searchParams.set('keyword', e.target.value);
-    }
-    setSearchParams(searchParams);
-  };
-
-  const handleChangeSort = (value: string) => {
-    if (query.sort === value) {
-      searchParams.delete('sort');
-    } else {
-      searchParams.set('sort', value);
-    }
-    setSearchParams(searchParams);
-  };
-
-  const handleChangePriority = (value: string) => {
-    if (query.priority === value) {
-      searchParams.delete('priorityFilter');
-    } else {
-      searchParams.set('priorityFilter', value);
-    }
-    setSearchParams(searchParams);
-  };
-  const handleChangeOrder = (value: string) => {
-    if (query.order === value) {
-      searchParams.delete('order');
-    } else {
-      searchParams.set('order', value);
-    }
-    setSearchParams(searchParams);
-  };
-  const handleChangeCountOnly = () => {
-    if (query.countOnly) {
-      searchParams.delete('countOnly');
-    } else {
-      searchParams.set('countOnly', 'true');
-    }
-    setSearchParams(searchParams);
-  };
+  const { todoFilterSearchParams, setTodoFilterSearchParams } =
+    useTodoFilterSearchParams();
 
   return (
     <div className="w-3/5">
@@ -72,8 +29,10 @@ export default function TodoList() {
             <button
               key={sort}
               type="button"
-              className={cn(sort === query.sort && 'font-bold')}
-              onClick={() => handleChangeSort(sort)}
+              className={cn(
+                sort === todoFilterSearchParams.sort && 'font-bold',
+              )}
+              onClick={() => setTodoFilterSearchParams('sort', sort)}
             >
               {sortMap[sort as Sort]}
             </button>
@@ -86,8 +45,13 @@ export default function TodoList() {
             <button
               key={priority}
               type="button"
-              className={cn(priority === query.priority && 'font-bold')}
-              onClick={() => handleChangePriority(priority)}
+              className={cn(
+                priority === todoFilterSearchParams.priorityFilter &&
+                  'font-bold',
+              )}
+              onClick={() =>
+                setTodoFilterSearchParams('priorityFilter', priority)
+              }
             >
               {priorityMap[priority as Priority].name}
             </button>
@@ -95,18 +59,23 @@ export default function TodoList() {
         </div>
       </div>
       <div className="flex items-center gap-2 p-1 text-sm">
-        {(query.sort === 'createdAt' || query.sort === 'updatedAt') && (
+        {(todoFilterSearchParams.sort === 'createdAt' ||
+          todoFilterSearchParams.sort === 'updatedAt') && (
           <div className="flex items-center gap-1">
             <button
               type="button"
-              className={cn('desc' === query.order && 'font-bold')}
-              onClick={() => handleChangeOrder('desc')}
+              className={cn(
+                'desc' === todoFilterSearchParams.order && 'font-bold',
+              )}
+              onClick={() => setTodoFilterSearchParams('order', 'desc')}
             >
               최신순
             </button>
             <button
-              className={cn('asc' === query.order && 'font-bold')}
-              onClick={() => handleChangeOrder('asc')}
+              className={cn(
+                'asc' === todoFilterSearchParams.order && 'font-bold',
+              )}
+              onClick={() => setTodoFilterSearchParams('order', 'asc')}
             >
               오래된순
             </button>
@@ -117,14 +86,17 @@ export default function TodoList() {
         <div className="flex items-center gap-1">
           <button
             type="button"
-            className={cn(query.countOnly && 'font-bold')}
-            onClick={handleChangeCountOnly}
+            className={cn(todoFilterSearchParams.countOnly && 'font-bold')}
+            onClick={() => setTodoFilterSearchParams('countOnly', 'true')}
           >
             갯수만가져오기
           </button>
         </div>
       </div>
-      <Input onChange={handleChangeKeyword} placeholder="검색어" />
+      <Input
+        onChange={(e) => setTodoFilterSearchParams('keyword', e.target.value)}
+        placeholder="검색어"
+      />
       {typeof data === 'number' ? (
         <div>{data}</div>
       ) : (

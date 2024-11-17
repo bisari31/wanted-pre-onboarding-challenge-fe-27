@@ -1,4 +1,4 @@
-import useQueryString from '@/hooks/useQueryString';
+import useTodoFilterSearchParams from '@/hooks/useTodoFilterSearchParams';
 import routes from '@/lib/routes';
 import { todoKeys } from '@/queries/keys';
 import todoService from '@/services/todoService';
@@ -21,9 +21,9 @@ export const useCreateTodo = () => {
 };
 
 export const useTodos = () => {
-  const { query } = useQueryString();
+  const { todoFilterSearchParams } = useTodoFilterSearchParams();
   return useQuery({
-    ...todoKeys.todos(query),
+    ...todoKeys.todos(todoFilterSearchParams),
     staleTime: 1000 * 60 * 30,
     select: (data) => {
       return data.data;
